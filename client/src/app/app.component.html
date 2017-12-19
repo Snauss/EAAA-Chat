@@ -1,0 +1,53 @@
+<h1>
+    {{title}}
+</h1>
+
+<hr>
+
+
+<label for="author">Author</label>
+<input type="text" class="form-control" id="author"
+       required [(ngModel)]="author.userName" name="author">
+<button type="button" (click)="createUser()" class="btn btn-default">New user!!</button>
+<hr>
+
+<label for="roomName">Room name</label>
+<input type="text" id="roomName" [(ngModel)]="tmpRoom.name" name="tmpRoom">
+
+<label for="roomDesc">Room description</label>
+<input type="text" id="roomDesc" [(ngModel)]="tmpRoom.description" name="tmpRoom">
+<button type="button" (click)="createRoom()" class="btn btn-default">New user!!</button>
+
+
+<hr>
+
+
+<h2>Create new blog message</h2>
+<form (ngSubmit)="submitChat()">
+    <div class="form-group">
+
+        <span>You are writing in {{currentRoom.name}} room</span>
+
+        <label for="body">Body</label>
+        <input type="text" class="form-control" id="body"
+               required
+               [(ngModel)]="model.messageBody" name="body">
+    </div>
+    <button type="submit" class="btn btn-default">Submit</button>
+</form>
+<hr>
+
+<h2>All rooms</h2>
+<ul>
+    <li *ngFor="let room of chatRooms">
+        <a (click)="selectRoom(room._id)">{{room.name}}</a>
+    </li>
+</ul>
+
+<h2>All chat messages</h2>
+<ul>
+    <li *ngFor="let message of chatMessages">
+        {{message.room.name}}
+        {{message.timeStamp | date: ' HH:mm - dd/MM/yyyy'}} {{message.author.userName}}: "{{message.messageBody}}"
+    </li>
+</ul>
