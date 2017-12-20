@@ -3,9 +3,9 @@
  */
 export class Room {
 
-    public _id: String;
-    public name: String;
-    public description: String;
+    public _id: string;
+    public name: string;
+    public description: string;
     public lastUpdated: Date;
 
     constructor() {

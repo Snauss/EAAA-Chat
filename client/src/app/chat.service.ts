@@ -4,17 +4,19 @@ import {Chat}           from './chat';
 import {User}           from './user';
 import {Room}           from './room';
 import {Observable}     from 'rxjs/Observable';
-import * as io from 'socket.io-client';
+// import * as io from 'socket.io-client';
+
 
 @Injectable()
 export class ChatService {
-    private getChatsUrl = 'message/get';  // URL to web API
+    // private getChatsUrl = 'message/get';  // URL to web API
     private postChatUrl = 'http://localhost:3001/message/create';  // URL to web API
-    constructor(private http: Http) {
-    }
+    constructor(
+        private http: Http
+       ) {}
 
-    private socket;
-    private url = window.location.origin;
+    // private socket;
+    // private url = window.location.origin;
 
     /*
      * Get blog messages from server
@@ -22,10 +24,10 @@ export class ChatService {
     getChats(selectedRoom): Observable<Chat[]> {
         console.log("seclecteRoom :", selectedRoom);
         let myParams = new URLSearchParams();
-        myParams.append('id',selectedRoom._id);
+        myParams.append('id', selectedRoom._id);
         let options = new RequestOptions({params: myParams});
         console.log("options ", options);
-        return this.http.get("http://localhost:3001/message/get?id="+selectedRoom._id)
+        return this.http.get("http://localhost:3001/message/get?id=" + selectedRoom._id)
             .map(this.extractData)
             .catch(this.handleError);
 
@@ -43,7 +45,7 @@ export class ChatService {
         // return observable;
     }
 
-    getRooms() : Observable<Room[]>{
+    getRooms(): Observable<Room[]> {
         return this.http.get("http://localhost:3001/room/get")
             .map(this.extractData)
             .catch(this.handleError);
@@ -55,28 +57,27 @@ export class ChatService {
     addChat(chat: Chat): Observable<Chat> {
         let headers = new Headers({'Content-Type': 'application/json'});
         let options = new RequestOptions({headers: headers});
-        console.log("chat service chat ",chat);
+        console.log("chat service chat ", chat);
         return this.http.post(this.postChatUrl, chat, options)
             .map(this.extractData)
             .catch(this.handleError);
     }
 
-    addUser(user: User) : Observable<User>{
+    addUser(user: User): Observable<User> {
         let headers = new Headers({'Content-Type': 'application/json'});
         let options = new RequestOptions({headers: headers});
-       return this.http.post("http://localhost:3001/user/create", user, options)
-           .map(this.extractData)
-           .catch(this.handleError);
+        return this.http.post("http://localhost:3001/user/create", user, options)
+            .map(this.extractData)
+            .catch(this.handleError);
     }
 
-    addRoom(room: Room) : Observable<Room>{
+    addRoom(room: Room): Observable<Room> {
         let headers = new Headers({'Content-Type': 'application/json'});
         let options = new RequestOptions({headers: headers});
         return this.http.post("http://localhost:3001/room/create", room, options)
             .map(this.extractData)
             .catch(this.handleError);
     }
-
 
 
     /*

@@ -1,17 +1,21 @@
-var express = require('express');
-var router = express.Router();
-var bodyParser = require('body-parser');
-var mongoose = require('mongoose');
+let express = require('express');
+// var router = express.Router();
+let bodyParser = require('body-parser');
+let mongoose = require('mongoose');
 // var schema = require('../model/schema');
-var database = require('../model/database');
+let database = require('../model/database');
 
-var room = require('../model/ChatRoom.js');
-var chatMsg = require('../model/ChatMessage.js');
-var user = require('../model/User.js');
+let room = require('../model/ChatRoom.js');
+let chatMsg = require('../model/ChatMessage.js');
+let user = require('../model/User.js');
 
-var app = express();
+let app = express();
 app.use(bodyParser.json());
 app.listen(3001);
+
+let http = require('http').Server(app);
+let io = require('socket.io')(http);
+http.listen(3002);
 
 // ---- To allow requests from outside ----
 app.use(function (req, res, next) {
@@ -36,14 +40,14 @@ app.all("*", function (req, res, next) {
     if (req.method.toLowerCase() !== "options") {
         return next();
     }
-    return res.send(204);
+    return res.sendStatus(204);
 });
 // -------------------------------------------
 
 
 /* GET all chat messages */
-app.get('/message/get', function(req, res, next) {
-    var ObjectId = require('mongoose').Types.ObjectId;
+app.get('/message/get', function (req, res, next) {
+    let ObjectId = require('mongoose').Types.ObjectId;
 
     console.log("da req body ", req.query);
     chatMsg.find({room: new ObjectId(req.query.id)}).populate("room").populate("author").exec(function (err, chats) {
@@ -52,12 +56,11 @@ app.get('/message/get', function(req, res, next) {
             return console.error(err);
         // console.log("Load success: ", chats);
         res.send(chats);
-
     });
 });
 
-app.get('/room/get',function (req,res,next) {
-    room.find({}).exec(function (err,rooms) {
+app.get('/room/get', function (req, res, next) {
+    room.find({}).exec(function (err, rooms) {
         if (err)
             return console.error(err);
         res.send(rooms);
@@ -66,64 +69,80 @@ app.get('/room/get',function (req,res,next) {
 
 
 /* POST single chat post */
-app.post('/message/create', function(req, res, next) {
+app.post('/message/create', function (req, res, next) {
     req.body.timeStamp = new Date();
-    var instance = new chatMsg(req.body);
+    let instance = new chatMsg(req.body);
     // console.log(instance);
-
-    instance.save(function (err, ChatMsg) {
-        result = err?err:ChatMsg;
+    instance.save(function (err, ChatMessage) {
+        chatMsg.populate(ChatMessage, {path: "author"}, (error, theChatMsg) => {
+            chatMsg.populate(theChatMsg, {path: "room"}, (error, ChatMsg) => {
+                io.emit("newMessage", ChatMsg);
+            });
+        });
+        result = err ? err : ChatMessage;
         res.send(result);
-        console.log("chat backend ", result);
-        router.notifyclients();
+        // console.log("chat backend ", result);
+        // router.notifyclients();
         return result;
     });
 });
 
-app.post('/user/create', function (req,res,next) {
-    console.log("userbody ",req.body);
-    var instance = new user(req.body);
-    instance.save(function (err, user) {
-        result = err?err:user;
-        console.log("user result ", result);
-        res.send(result);
-        router.notifyclients();
-        return result;
+app.post('/user/create', function (req, res, next) {
+    user.findOne(req.body, (error, userFound) => {
+        if (userFound) {
+            res.send(userFound);
+        } else {
+            console.log("userbody ", req.body);
+            let instance = new user(req.body);
+            instance.save(function (err, user) {
+                result = err ? err : user;
+                console.log("user result ", result);
+                res.send(result);
+                // router.notifyclients();
+                return result;
+            });
+        }
     });
+
 });
 
-app.post('/room/create', function (req,res,next) {
+app.post('/room/create', function (req, res, next) {
     // console.log("userbody ",req.body);
     req.body.lastUpdated = new Date();
-    var instance = new room(req.body);
+    let instance = new room(req.body);
     instance.save(function (err, room) {
-        result = err?err:room;
+        result = err ? err : room;
         res.send(result);
-        router.notifyclients();
+        // router.notifyclients();
         return result;
     });
 });
 
+io.on("connection", socket => {
+    socket.on("newMessage", message => {
+        console.log("the message ", message)
+    })
+});
 
-/* Notify chat messages to connected clients */
-router.clients = [];
-router.addClient = function (client) {
-    router.clients.push(client);
-    router.notifyclients(client);
-};
-router.notifyclients = function (client) {
-   chatMsg.find({}).exec(function (err, chats) {
-        if (err)
-            return console.error(err);
-        //console.log("Load success: ", chats);
-        var toNotify = client?new Array(client):router.clients;
-        toNotify.forEach(function(socket){
-            socket.emit('refresh', chats);
-        })
-    });
-};
+// /* Notify chat messages to connected clients */
+// router.clients = [];
+// router.addClient = function (client) {
+//     router.clients.push(client);
+//     router.notifyclients(client);
+// };
+// router.notifyclients = function (client) {
+//    chatMsg.find({}).exec(function (err, chats) {
+//         if (err)
+//             return console.error(err);
+//         //console.log("Load success: ", chats);
+//         var toNotify = client?new Array(client):router.clients;
+//         toNotify.forEach(function(socket){
+//             socket.emit('refresh', chats);
+//         })
+//     });
+// };
 
 
-
-//export the router
-module.exports = router;
+//
+// //export the router
+// module.exports = router;

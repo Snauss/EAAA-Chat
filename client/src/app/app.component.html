@@ -1,53 +1,81 @@
-<h1>
-    {{title}}
-</h1>
+<div id="frame">
+    <div id="sidepanel">
+        <div id="profile">
+            <div class="wrap">
+                <div *ngIf="currentUser.userName;else input_username">
+                    <p>Logged in as: <strong>{{currentUser.userName}}</strong></p>
+                </div>
+                <ng-template #input_username>
+                    <div class="container">
+                        <div id="pickUser" class="input-group">
+                            <input type="text" class="form-control " id="author" placeholder="Type username"
+                                   [(ngModel)]="newUser.userName" name="author">
+                            <span class="input-group-btn">
+                                <button type="button" (click)="createUser()" class="btn btn-default">New user</button>
+                            </span>
+                        </div>
+                    </div>
+                </ng-template>
+            </div>
+        </div>
+        <div id="search">
 
-<hr>
+        </div>
+        <div id="chatRooms">
+            <ul>
+                <li class="room" [ngClass]="{'active':currentRoom == room}"
+                    *ngFor="let room of chatRooms; let i = index;" (click)="selectRoom(room._id)">
+                    <div class="wrap">
+                        <div class="meta">
+                            <p class="name">{{room.name}}</p>
+                            <p class="preview">{{room.description}}</p>
+                        </div>
+                    </div>
+                </li>
+            </ul>
 
 
-<label for="author">Author</label>
-<input type="text" class="form-control" id="author"
-       required [(ngModel)]="author.userName" name="author">
-<button type="button" (click)="createUser()" class="btn btn-default">New user!!</button>
-<hr>
-
-<label for="roomName">Room name</label>
-<input type="text" id="roomName" [(ngModel)]="tmpRoom.name" name="tmpRoom">
-
-<label for="roomDesc">Room description</label>
-<input type="text" id="roomDesc" [(ngModel)]="tmpRoom.description" name="tmpRoom">
-<button type="button" (click)="createRoom()" class="btn btn-default">New user!!</button>
-
-
-<hr>
-
-
-<h2>Create new blog message</h2>
-<form (ngSubmit)="submitChat()">
-    <div class="form-group">
-
-        <span>You are writing in {{currentRoom.name}} room</span>
-
-        <label for="body">Body</label>
-        <input type="text" class="form-control" id="body"
-               required
-               [(ngModel)]="model.messageBody" name="body">
+        </div>
+        <div id="bottom-bar">
+            <button id="addcontact"><i class="fa fa-user-plus fa-fw" aria-hidden="true"></i> <span>Add contact</span>
+            </button>
+            <button id="settings"><i class="fa fa-cog fa-fw" aria-hidden="true"></i> <span>Settings</span></button>
+        </div>
     </div>
-    <button type="submit" class="btn btn-default">Submit</button>
-</form>
-<hr>
+    <div class="content">
 
-<h2>All rooms</h2>
-<ul>
-    <li *ngFor="let room of chatRooms">
-        <a (click)="selectRoom(room._id)">{{room.name}}</a>
-    </li>
-</ul>
+        <div #scrollMe class="messages">
 
-<h2>All chat messages</h2>
-<ul>
-    <li *ngFor="let message of chatMessages">
-        {{message.room.name}}
-        {{message.timeStamp | date: ' HH:mm - dd/MM/yyyy'}} {{message.author.userName}}: "{{message.messageBody}}"
-    </li>
-</ul>
+            <h2>All chat messages</h2>
+            <!--<ul>-->
+                <!--<li *ngFor="let message of chatMessages">-->
+                    <!--{{message.room.name}}-->
+                    <!--{{message.timeStamp | date: ' HH:mm - dd/MM/yyyy'}} {{message.author.userName}}:-->
+                    <!--"{{message.messageBody}}"-->
+                <!--</li>-->
+            <!--</ul>-->
+            <ul>
+                <li *ngFor="let message of chatMessages"
+                    [ngClass]="currentUser.userName == message.author.userName ? 'sent' : 'replies'">
+                    <em>{{message.author.userName}}:</em>
+                    <p>{{message.messageBody}}</p>
+                </li>
+                <!--<li class="replies">-->
+
+            </ul>
+        </div>
+        <div class="message-input">
+            <div class="wrap">
+                <form (ngSubmit)="submitChat()">
+                    <div class="form-group">
+                        <input type="text" class="form-control" id="body"
+                               placeholder="Write your message..."
+                               [(ngModel)]="model.messageBody" name="body">
+                    </div>
+                    <button type="submit" class="submit"></button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
