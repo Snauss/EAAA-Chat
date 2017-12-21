@@ -96,6 +96,9 @@ export class AppComponent implements OnInit {
     }
 
     createUser() {
+        if(!this.newUser.userName){
+            return console.log("A user needs a name ");
+        }else{
         this.chatService.addUser(this.newUser)
             .subscribe(user => {
                     this.currentUser = user;
@@ -104,6 +107,7 @@ export class AppComponent implements OnInit {
                 },
                 error => this.title = <any>error
             )
+        }
     }
 
     changeUser() {

@@ -17,11 +17,11 @@ export class ChatService {
      * Get blog messages from server
      */
     getChats(selectedRoom): Observable<Chat[]> {
-        // console.log("seclecteRoom :", selectedRoom);
+        console.log("seclecteRoom :", selectedRoom);
         let myParams = new URLSearchParams();
         myParams.append('id', selectedRoom._id);
         let options = new RequestOptions({params: myParams});
-        // console.log("options ", options);
+        console.log("options ", options);
         return this.http.get("http://localhost:3001/message/get?id=" + selectedRoom._id)
             .map(this.extractData)
             .catch(this.handleError);

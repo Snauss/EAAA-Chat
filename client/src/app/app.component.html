@@ -4,18 +4,20 @@
             <div class="wrap">
                 <div class="loggedIn" *ngIf="currentUser.userName;else input_username">
                     <p>Logged in as: <strong>{{currentUser.userName}}</strong>
-                    <br>
-                    <em class="userChange" (click)="changeUser()">Change user</em></p>
+                        <br>
+                        <em class="userChange" (click)="changeUser()">Change user</em></p>
                 </div>
                 <ng-template #input_username>
-                    <div class="container">
-                        <div id="pickUser" class="input-group">
-                            <input type="text" class="form-control " id="author" placeholder="Type username"
-                                   [(ngModel)]="newUser.userName" name="author">
-                            <span class="input-group-btn">
-                                <button type="button" (click)="createUser()" class="btn btn-default">New user</button>
+                    <div class="container" style="padding-bottom: 8%">
+                        <form>
+                            <div id="pickUser" class="input-group">
+                                <input type="text" class="form-control " id="author" placeholder="Type username"
+                                       [(ngModel)]="newUser.userName" name="author" required="required">
+                                <span class="input-group-btn">
+                                <button type="submit" (click)="createUser()" class="btn btn-default">New user</button>
                             </span>
-                        </div>
+                            </div>
+                        </form>
                     </div>
                 </ng-template>
             </div>
@@ -24,8 +26,7 @@
             <h1 class="text-center">Chatrooms</h1>
             <ul>
                 <li class="room" [ngClass]="{'active':currentRoom == room}"
-                    *ngFor="let room of chatRooms; let i = index;" >
-                    <!--(click)="selectRoom(room._id)"-->
+                    *ngFor="let room of chatRooms; let i = index;" (click)="selectRoom(room._id)">
                     <div class="wrap">
                         <div class="meta">
                             <p class="name">{{room.name}}</p>
@@ -76,18 +77,23 @@
                             </div>
                             <div class="form-group">
                                 <label for="newRoomDesc">Room description</label>
-                                <input type="text" class="form-control" id="newRoomDesc"  required=""
-                                       placeholder="Describe the room... " [(ngModel)]="tmpRoom.description" name="tmpRoom">
+                                <input type="text" class="form-control" id="newRoomDesc" required=""
+                                       placeholder="Describe the room... " [(ngModel)]="tmpRoom.description"
+                                       name="tmpRoom">
                                 <span class="form-text small text-danger">{{warnRoomDesc}}</span>
                             </div>
                             <div class="form-group mx-auto">
-                                <button type="submit"  class="btn btn-success btn-lg btn-block " (click)="createRoom()">Create room</button>
+                                <button type="submit" class="btn btn-success btn-lg btn-block " (click)="createRoom()">
+                                    Create room
+                                </button>
                             </div>
                         </form>
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button id="modalCloseBtn" type="button" class="btn btn-outline-dark" (click)="c('Close click')">Close</button>
+                    <button id="modalCloseBtn" type="button" class="btn btn-outline-dark" (click)="c('Close click')">
+                        Close
+                    </button>
                 </div>
             </ng-template>
             <button class="btn btn-lg btn-outline-primary" (click)="open(roomCreater)">
@@ -99,7 +105,7 @@
     <div class="content container">
 
         <div #scrollMe class="messages" style="padding: 3%; height: 100%">
-            <div *ngIf="currentRoom._id">
+            <div *ngIf="currentRoom._id && currentUser.userName">
                 <div class="roomBanner">
                     <h2 class="center">{{currentRoom.name}}</h2>
                 </div>
@@ -126,11 +132,14 @@
                     <!--<li class="replies">-->
                 </ul>
             </div>
-            <div *ngIf="!currentRoom._id" class="h-100 align-items-center row" style="height: 100%;">
+            <div *ngIf="!currentUser._id" class="h-10 align-items-center row">
+                <h2><<--- Pick a username</h2>
+            </div>
+            <div *ngIf="!currentRoom._id && currentUser._id" class="h-100 align-items-center row">
                 <h2><<--- Select a chatroom</h2>
             </div>
         </div>
-        <div class="message-input">
+        <div class="message-input" *ngIf="currentUser._id&& currentRoom._id">
             <div class="wrap">
                 <form (ngSubmit)="submitChat()">
                     <div class="form-group">
