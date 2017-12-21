@@ -9,40 +9,22 @@ import {Observable}     from 'rxjs/Observable';
 
 @Injectable()
 export class ChatService {
-    // private getChatsUrl = 'message/get';  // URL to web API
     private postChatUrl = 'http://localhost:3001/message/create';  // URL to web API
-    constructor(
-        private http: Http
-       ) {}
-
-    // private socket;
-    // private url = window.location.origin;
+    constructor(private http: Http) {
+    }
 
     /*
      * Get blog messages from server
      */
     getChats(selectedRoom): Observable<Chat[]> {
-        console.log("seclecteRoom :", selectedRoom);
+        // console.log("seclecteRoom :", selectedRoom);
         let myParams = new URLSearchParams();
         myParams.append('id', selectedRoom._id);
         let options = new RequestOptions({params: myParams});
-        console.log("options ", options);
+        // console.log("options ", options);
         return this.http.get("http://localhost:3001/message/get?id=" + selectedRoom._id)
             .map(this.extractData)
             .catch(this.handleError);
-
-        // let observable = new Observable(observer => {
-        //     console.log("Socket:", this.url);
-        //     this.socket = io(this.url);
-        //     this.socket.on('refresh', (data) => {
-        //         observer.next(data);
-        //     });
-        //     console.log(this.http);
-        //     return () => {
-        //         this.socket.disconnect();
-        //     };
-        // });
-        // return observable;
     }
 
     getRooms(): Observable<Room[]> {

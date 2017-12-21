@@ -1,4 +1,4 @@
-import {Component, AfterViewChecked, ElementRef, ViewChild,OnInit} from '@angular/core';
+import {Component, AfterViewChecked, ElementRef, ViewChild, OnInit} from '@angular/core';
 import {Chat} from './chat';
 import {User} from './user';
 import {Room} from './room';
@@ -10,6 +10,7 @@ import {ChatService} from './chat.service';
 import {Socket} from 'ng-socket-io';
 
 import {NgbModal, ModalDismissReasons} from '@ng-bootstrap/ng-bootstrap';
+import {current} from "codelyzer/util/syntaxKind";
 
 @Component({
     selector: 'app-root',
@@ -33,14 +34,17 @@ export class AppComponent implements OnInit {
     currentRoom: Room;
     currentUser: User;
 
+    warnRoomName: string;
+    warnRoomDesc: string;
+
     constructor(private chatService: ChatService,
                 private modalService: NgbModal,
                 private socket: Socket) {
     }
 
     // Open model
-    open(content) {
-        this.modalService.open(content).result.then((result) => {
+    open(roomCreater) {
+        this.modalService.open(roomCreater).result.then((result) => {
             this.closeResult = `Closed with: ${result}`;
         }, (reason) => {
             this.closeResult = `Dismissed ${this.getDismissReason(reason)}`;
@@ -62,27 +66,48 @@ export class AppComponent implements OnInit {
         this.currentRoom = this.chatRooms.filter(x => x._id == selectedRoom)[0];
         // console.log("this is the selected room",this.currentRoom)
         this.getChats();
+        console.log("selected room ", selectedRoom)
     }
 
     createRoom() {
-        this.chatService.addRoom(this.tmpRoom)
-            .subscribe(room => {
-                    this.tmpRoom = room;
-                    console.log("the room :", room)
-                },
-                error => this.title = <any>error
-            )
+        if (!this.tmpRoom.name) {
+            this.warnRoomName = "Room name required";
+            this.warnRoomDesc = "";
+            return console.log("No room name");
+        }
+        if (!this.tmpRoom.description) {
+            this.warnRoomName = "";
+            this.warnRoomDesc = "Room Description required";
+            return console.log("no desc")
+        }
+        if (this.tmpRoom.name && this.tmpRoom.description) {
+            this.warnRoomName = "";
+            this.warnRoomDesc = "";
+            this.chatService.addRoom(this.tmpRoom)
+                .subscribe(room => {
+                        this.tmpRoom = room;
+                        this.getRooms();
+                        this.tmpRoom = new Room();
+                        document.getElementById("modalCloseBtn").click();
+                    },
+                    error => this.title = <any>error
+                );
+        }
     }
 
     createUser() {
         this.chatService.addUser(this.newUser)
             .subscribe(user => {
                     this.currentUser = user;
-                    localStorage.setItem("user",JSON.stringify(user));
+                    localStorage.setItem("user", JSON.stringify(user));
                     console.log("the user :", user)
                 },
                 error => this.title = <any>error
             )
+    }
+
+    changeUser() {
+        this.currentUser = new User;
     }
 
     submitChat() {
@@ -106,7 +131,7 @@ export class AppComponent implements OnInit {
         this.chatService.getChats(this.currentRoom)
             .subscribe(
                 messages => {
-                    console.log("Messages: ", messages);
+                    // console.log("Messages: ", messages);
                     this.chatMessages = messages;
                 },
                 error => this.title = <any>error
@@ -118,12 +143,13 @@ export class AppComponent implements OnInit {
         this.chatService.getRooms()
             .subscribe(
                 rooms => {
-                    console.log("Messages: ", rooms);
+                    // console.log("Rooms: ", rooms);
                     this.chatRooms = rooms;
                 },
                 error => this.title = <any>error
             );
     }
+
     ngAfterViewChecked() {
         this.scrollToBottom();
     }
@@ -131,7 +157,8 @@ export class AppComponent implements OnInit {
     scrollToBottom(): void {
         try {
             this.myScrollContainer.nativeElement.scrollTop = this.myScrollContainer.nativeElement.scrollHeight;
-        } catch(err) { }
+        } catch (err) {
+        }
     }
 
     ngOnInit() {
@@ -142,16 +169,15 @@ export class AppComponent implements OnInit {
         this.newUser = new User();
         this.currentUser = new User();
         let localUser = localStorage.getItem("user");
-        if(localUser){
+        if (localUser) {
             this.currentUser = JSON.parse(localUser);
-
         }
         this.socket.on("newMessage", message => {
-            if(message.room._id === this.currentRoom._id) {
+            if (message.room._id === this.currentRoom._id) {
                 this.scrollToBottom();
                 this.chatMessages.push(message);
             }
             console.log("this is the new message ", message)
-        })
+        });
     }
 }

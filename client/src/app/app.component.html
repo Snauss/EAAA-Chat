@@ -2,8 +2,10 @@
     <div id="sidepanel">
         <div id="profile">
             <div class="wrap">
-                <div *ngIf="currentUser.userName;else input_username">
-                    <p>Logged in as: <strong>{{currentUser.userName}}</strong></p>
+                <div class="loggedIn" *ngIf="currentUser.userName;else input_username">
+                    <p>Logged in as: <strong>{{currentUser.userName}}</strong>
+                    <br>
+                    <em class="userChange" (click)="changeUser()">Change user</em></p>
                 </div>
                 <ng-template #input_username>
                     <div class="container">
@@ -18,13 +20,12 @@
                 </ng-template>
             </div>
         </div>
-        <div id="search">
-
-        </div>
         <div id="chatRooms">
+            <h1 class="text-center">Chatrooms</h1>
             <ul>
                 <li class="room" [ngClass]="{'active':currentRoom == room}"
-                    *ngFor="let room of chatRooms; let i = index;" (click)="selectRoom(room._id)">
+                    *ngFor="let room of chatRooms; let i = index;" >
+                    <!--(click)="selectRoom(room._id)"-->
                     <div class="wrap">
                         <div class="meta">
                             <p class="name">{{room.name}}</p>
@@ -36,33 +37,98 @@
 
 
         </div>
+
+
         <div id="bottom-bar">
-            <button id="addcontact"><i class="fa fa-user-plus fa-fw" aria-hidden="true"></i> <span>Add contact</span>
+            <!--<ng-template #testcontent let-c="close" let-d="dismiss">-->
+            <!--<div class="modal-header">-->
+            <!--<h4 class="modal-title">Modal title</h4>-->
+            <!--<button type="button" class="close" aria-label="Close" (click)="d('Cross click')">-->
+            <!--<span aria-hidden="true">&times;</span>-->
+            <!--</button>-->
+            <!--</div>-->
+            <!--<div class="modal-body">-->
+            <!--<p>One fine body&hellip;</p>-->
+            <!--</div>-->
+            <!--<div class="modal-footer">-->
+            <!--<button type="button" class="btn btn-outline-dark" (click)="c('Close click')">Close</button>-->
+            <!--</div>-->
+            <!--</ng-template>-->
+
+            <!--<button class="btn btn-lg btn-outline-primary" (click)="open(roomCreater)">Launch demo modal</button>-->
+
+
+            <ng-template #roomCreater let-c="close" let-d="dismiss">
+                <div class="modal-header">
+                    <h4 class="modal-title">Create new Chatroom</h4>
+                    <button type="button" class="close" aria-label="Close" (click)="d('Cross click')">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="card-block">
+                        <form class="form" role="form" autocomplete="off">
+                            <div class="form-group">
+                                <label for="newRoomName">Room name</label>
+                                <input type="text" class="form-control" id="newRoomName" required="required"
+                                       placeholder="Give the room a name..." [(ngModel)]="tmpRoom.name" name="tmpRoom">
+                                <span class="form-text small text-danger">{{warnRoomName}}</span>
+                            </div>
+                            <div class="form-group">
+                                <label for="newRoomDesc">Room description</label>
+                                <input type="text" class="form-control" id="newRoomDesc"  required=""
+                                       placeholder="Describe the room... " [(ngModel)]="tmpRoom.description" name="tmpRoom">
+                                <span class="form-text small text-danger">{{warnRoomDesc}}</span>
+                            </div>
+                            <div class="form-group mx-auto">
+                                <button type="submit"  class="btn btn-success btn-lg btn-block " (click)="createRoom()">Create room</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button id="modalCloseBtn" type="button" class="btn btn-outline-dark" (click)="c('Close click')">Close</button>
+                </div>
+            </ng-template>
+            <button class="btn btn-lg btn-outline-primary" (click)="open(roomCreater)">
+                <i class="material-icons" style="size: 1.2em;">add_circle_outline</i> <span>Add chatroom</span>
             </button>
-            <button id="settings"><i class="fa fa-cog fa-fw" aria-hidden="true"></i> <span>Settings</span></button>
+            <!--<button id="settings"><i class="fa fa-cog fa-fw"></i> <span>Settings</span></button>-->
         </div>
     </div>
-    <div class="content">
+    <div class="content container">
 
-        <div #scrollMe class="messages">
+        <div #scrollMe class="messages" style="padding: 3%; height: 100%">
+            <div *ngIf="currentRoom._id">
+                <div class="roomBanner">
+                    <h2 class="center">{{currentRoom.name}}</h2>
+                </div>
 
-            <h2>All chat messages</h2>
-            <!--<ul>-->
+                <!--<ul>-->
                 <!--<li *ngFor="let message of chatMessages">-->
-                    <!--{{message.room.name}}-->
-                    <!--{{message.timeStamp | date: ' HH:mm - dd/MM/yyyy'}} {{message.author.userName}}:-->
-                    <!--"{{message.messageBody}}"-->
+                <!--{{message.room.name}}-->
+                <!--{{message.timeStamp | date: ' HH:mm - dd/MM/yyyy'}} {{message.author.userName}}:-->
+                <!--"{{message.messageBody}}"-->
                 <!--</li>-->
-            <!--</ul>-->
-            <ul>
-                <li *ngFor="let message of chatMessages"
-                    [ngClass]="currentUser.userName == message.author.userName ? 'sent' : 'replies'">
-                    <em>{{message.author.userName}}:</em>
-                    <p>{{message.messageBody}}</p>
-                </li>
-                <!--<li class="replies">-->
-
-            </ul>
+                <!--</ul>-->
+                <ul class="message-list">
+                    <li *ngFor="let message of chatMessages">
+                        <div class="message" [ngClass]="{'byUser': currentUser.userName == message.author.userName}">
+                            <div class="message-author">
+                                <em>{{message.author.userName}}:</em>
+                            </div>
+                            <div class="message-body"
+                                 [ngClass]="currentUser.userName == message.author.userName ? 'sent' : 'replies'">
+                                <p>{{message.messageBody}}</p>
+                            </div>
+                        </div>
+                    </li>
+                    <!--<li class="replies">-->
+                </ul>
+            </div>
+            <div *ngIf="!currentRoom._id" class="h-100 align-items-center row" style="height: 100%;">
+                <h2><<--- Select a chatroom</h2>
+            </div>
         </div>
         <div class="message-input">
             <div class="wrap">
@@ -72,7 +138,7 @@
                                placeholder="Write your message..."
                                [(ngModel)]="model.messageBody" name="body">
                     </div>
-                    <button type="submit" class="submit"></button>
+                    <button type="submit" class="submit material-icons">send</button>
                 </form>
             </div>
         </div>

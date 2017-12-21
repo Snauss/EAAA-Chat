@@ -107,7 +107,6 @@ app.post('/user/create', function (req, res, next) {
 });
 
 app.post('/room/create', function (req, res, next) {
-    // console.log("userbody ",req.body);
     req.body.lastUpdated = new Date();
     let instance = new room(req.body);
     instance.save(function (err, room) {
